@@ -3,7 +3,7 @@
 DELIMITER $$
 CREATE PROCEDURE ComputeAverageScoreForUser(IN user_id INT)
 BEGIN
-	DECLARE weighted_sum FLOAT DEFAULT 0;
+	DECLARE weighted_sum INT DEFAULT 0;
 	DECLARE total_weight INT DEFAULT 0;
 
 	SELECT SUM(c.score * p.weight) INTO weighted_sum
