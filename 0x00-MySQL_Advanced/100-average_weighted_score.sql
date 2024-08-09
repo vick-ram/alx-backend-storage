@@ -8,14 +8,19 @@ BEGIN
 
 	SELECT SUM(c.score * p.weight) INTO weighted_sum
 	FROM corrections c
-	JOIN projects p ON c.project_id = p.id
+	INNER JOIN projects p ON c.project_id = p.id
 	WHERE c.user_id = user_id;
 
 	SELECT SUM(p.weight) INTO total_weight
-	FROM projects p
-	WHERE p.id IN (SELECT project_id FROM corections WHERE user_id = user_id);
+	FROM corrections c
+	INNER JOIN projects p ON c.project_id = p.id
+	WHERE c.user_id = user_id;
 
-	IF total_weight > 0 THEN
+	IF total_weight = 0 THEN
+		UPDATE users
+		SET average_score = 0
+		WHERE id = user_id;
+	ELSE
 		UPDATE users
 		SET average_score = weighted_sum / total_weight
 		WHERE id = user_id;
