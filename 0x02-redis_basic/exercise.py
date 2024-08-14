@@ -6,7 +6,7 @@ import functools
 from typing import Union, Callable
 
 
-def count_calls(method: callable) -> callable:
+def count_calls(method: Callable) -> Callable:
     """Decorator to count how many times a method is called."""
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
