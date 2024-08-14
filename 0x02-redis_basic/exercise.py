@@ -3,7 +3,7 @@
 import redis
 import uuid
 import functools
-from typing import Union
+from typing import Union, Callable
 
 
 def count_calls(method: callable) -> callable:
@@ -18,7 +18,7 @@ def count_calls(method: callable) -> callable:
 
 
 
-def call_history(method: callable) -> callable:
+def call_history(method: Callable) -> Callable:
     """Decorator to store the history of inputs and outputs for a function."""
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
@@ -32,6 +32,19 @@ def call_history(method: callable) -> callable:
     return wrapper
 
 
+def replay(method: Callable) -> None:
+    """Display the history of calls of a particular function."""
+    cache = method.__self__.redis
+    method_name = method.__qualname__
+
+    inputs = cache.lrange(f"{method_name}:inputs", 0, -1)
+    outputs = cache.lrange(f"{method_name}:outputs", 0, -1)
+
+    print(f"{method_name} was called {len(inputs)} times:")
+    for inp, out in zip(inputs, outputs):
+        print(f"{method_name}(*{inp.decode('utf-8')}) -> {out.decode('utf-8')}")
+
+
 class Cache:
     """The redis cache"""
 
@@ -40,6 +53,7 @@ class Cache:
         self._redis.flushdb()
 
     @count_calls
+    @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """Store the data in Redis and return the key."""
         key = str(uuid.uuid4())
@@ -47,7 +61,7 @@ class Cache:
         return key
 
 
-    def get(self, key: str, fn: callable = None) -> Union[str, bytes, int, float, None]:
+    def get(self, key: str, fn: Callable = None) -> Union[str, bytes, int, float, None]:
         """Get data from Redis and optionally process it with a function."""
         value = self._redis.get(key)
         if value is None:
