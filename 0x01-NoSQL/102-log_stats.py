@@ -23,7 +23,8 @@ def log_stats():
 
     """Count number of GET requests to /status"""
     status_check_count = nginx_collection.count_documents(
-        {"method": "GET", "path": "/status"}: )
+        {"method": "GET", "path": "/status"})
+
     print(f"{status_check_count} status check")
     """Aggregate to find the top 10 most present IPs"""
     print("IPs:")
